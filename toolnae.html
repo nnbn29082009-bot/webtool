@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <title>HỆ THỐNG TOOL NAE</title>
+  <style>
+    :root {
+      --neon-green: #7CFFB2;
+      --neon-pink: #ff4fd8;
+      --neon-cyan: #00ffff;
+      --glass-white: rgba(255, 255, 255, 0.15);
+      --border-white: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Chặn bôi đen toàn trang */
+    * { 
+        box-sizing: border-box; 
+        -webkit-user-select: none; 
+        -moz-user-select: none; 
+        -ms-user-select: none; 
+        user-select: none; 
+        -webkit-touch-callout: none;
+    }
+    input { -webkit-user-select: text; user-select: text; }
+    
+    body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
+    
+    #gameIframe { position: fixed; inset: 0; width: 100vw; height: 100vh; border: none; z-index: 1; display: none; }
+
+    /* Login Screen */
+    #loginScreen { position: fixed; inset: 0; background: #02130d; display: flex; justify-content: center; align-items: center; z-index: 99999; }
+    .loginBox { width: 280px; padding: 25px; border-radius: 15px; text-align: center; background: #0a1e14; border: 1px solid var(--neon-green); }
+    .loginBox input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--neon-pink); background: rgba(255,255,255,0.05); color: #fff; text-align: center; border-radius: 5px; outline: none; }
+    .loginBox button { width: 100%; padding: 10px; background: linear-gradient(90deg, var(--neon-pink), var(--neon-green)); border: none; font-weight: 900; border-radius: 5px; cursor: pointer; color: #000; }
+
+    /* Menu Chọn Game */
+    #menuScreen { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 99990; padding: 20px; }
+    .menu-title { font-size: 24px; font-weight: 900; color: var(--neon-green); margin-bottom: 5px; }
+    .menu-subtitle { font-size: 14px; color: var(--neon-pink); margin-bottom: 30px; }
+    .game-card { width: 100%; max-width: 350px; background: rgba(20, 20, 20, 0.8); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid rgba(255,255,255,0.1); }
+    .game-icon { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+    .btn-activate { background: #ff4b81; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: 900; cursor: pointer; }
+
+    /* Floating Tool */
+    #botWrap {
+      position: fixed; top: 150px; left: 20px; z-index: 9998;
+      display: none; flex-direction: column; align-items: center; gap: 10px; 
+      touch-action: none;
+      transform: scale(1) rotate(0deg); 
+      transform-origin: center center;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .robot-container { display: flex; align-items: center; gap: 8px; position: relative; }
+    #robot { width: 85px; height: auto; filter: drop-shadow(0 0 5px var(--neon-cyan)); }
+    
+    #botPanel {
+      width: 170px; background: var(--glass-white);
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--border-white); border-radius: 12px;
+      padding: 15px 10px 10px 10px; position: relative;
+    }
+    
+    .ctrl-btn {
+      position: absolute; top: -14px; width: 28px; height: 28px;
+      background: #fff; color: #000; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      font-weight: bold; cursor: pointer; z-index: 110; border: 2px solid #333;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    #btnRotate { left: -10px; } 
+    #btnScale { right: -10px; }  
+
+    .info-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 13px; color: #fff; }
+    .val { font-weight: 900; }
+    #statusDot { position: absolute; bottom: 5px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: #ff0000; box-shadow: 0 0 5px red; }
+
+    .exit-text-btn {
+      margin-top: 5px; color: #fff; font-size: 11px; font-weight: 900;
+      text-decoration: underline; cursor: pointer; text-shadow: 0 0 5px var(--neon-pink);
+      background: none; border: none; opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body oncontextmenu="return false;">
+
+<div id="loginScreen">
+  <div class="loginBox">
+    <div style="font-size:20px; font-weight:900; color:var(--neon-green); margin-bottom:15px;">NAE TOOL SYSTEM</div>
+    <input type="text" id="keyInput" placeholder="Nhập Key...">
+    <button onclick="checkKey()">MỞ KHOÁ</button>
+  </div>
+</div>
+
+<div id="menuScreen">
+  <div class="menu-title">HỆ THỐNG BAY BỔNG</div>
+  <div class="menu-subtitle">CÔNG NGHỆ NAE</div>
+  <div class="game-card">
+    <img src="https://c.pxhere.com/avatars/db/60/9c82132210f135eb936010ed37ea.jpg!an" class="game-icon">
+    <div style="flex:1"><div style="font-weight:900">SUNWIN</div><div style="font-size:11px; color:#aaa">Hệ Thống Phân Tích SUNWIN</div></div>
+    <button class="btn-activate" onclick="launchGame('sunwin')">KÍCH HOẠT</button>
+  </div>
+  <div class="game-card">
+    <img src="https://gram.social/storage/avatars/083/877/578/344/267/512/2/Yyi8k8ZaLnZ7WjOk7kcu_avatar.jpg?v=2" class="game-icon">
+    <div style="flex:1"><div style="font-weight:900">LC79</div><div style="font-size:11px; color:#aaa">Hệ Thống Phân Tích LC79</div></div>
+    <button class="btn-activate" onclick="launchGame('lc79')">KÍCH HOẠT</button>
+  </div>
+  <div onclick="clearSession()" style="margin-top: 20px; font-size: 12px; cursor: pointer; color: #666; text-decoration: underline;">ĐĂNG XUẤT THIẾT BỊ</div>
+</div>
+
+<div id="botWrap">
+  <div class="robot-container">
+    <img id="robot" src="https://i.postimg.cc/63bdy9D9/robotics-1.gif">
+    <div id="botPanel">
+      <div id="btnRotate" class="ctrl-btn" onclick="applyTransform('rotate')">↻</div>
+      <div id="btnScale" class="ctrl-btn" onclick="applyTransform('scale')">±</div>
+      <div class="info-row"><span>Phiên:</span> <span class="val" id="phienHienTai">---</span></div>
+      <div class="info-row"><span>Dự Đoán:</span> <span class="val" id="duDoan">---</span></div>
+      <div class="info-row"><span>Tỉ Lệ:</span> <span class="val" id="tyLe">0%</span></div>
+      <div id="statusDot"></div>
+    </div>
+  </div>
+  <button class="exit-text-btn" onclick="backToMenu()">[ QUAY VỀ MENU ]</button>
+</div>
+
+<iframe id="gameIframe" src=""></iframe>
+
+<script>
+  // --- CHẶN XEM CODE ---
+  document.onkeydown = function(e) {
+    // Chặn F12
+    if (e.keyCode == 123) return false;
+    // Chặn Ctrl+Shift+I (Inspect)
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+    // Chặn Ctrl+Shift+C (Inspect Element)
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+    // Chặn Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+    // Chặn Ctrl+U (View Source)
+    if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+    // Chặn Ctrl+S (Save page)
+    if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false;
+  };
+
+  const CONFIG = {
+    sunwin: { url: "https://web.sunwin.ke/?affId=Sunwin", api: "https://bracket-ellen-roads-prefer.trycloudflare.com/api/tx" },
+    lc79: { url: "https://play.lc79b.bet/", api: "https://chance-compete-chambers-feelings.trycloudflare.com/api/tx" }
+  };
+
+  const KEY_LIFETIME = 24 * 60 * 60 * 1000; // Thời hạn 24h
+
+  let currentMode = null, lastS = 0, updateTimer = null;
+  let rotation = 0;
+  let scale = 1;
+
+  window.onload = function() {
+    const savedKey = localStorage.getItem("nae_key");
+    const loginTimestamp = localStorage.getItem("nae_login_time");
+
+    if (savedKey && loginTimestamp) {
+      const now = new Date().getTime();
+      if (now - loginTimestamp < KEY_LIFETIME) {
+        showMenu();
+      } else {
+        localStorage.clear();
+      }
+    }
+  };
+
+  function checkKey() {
+    const keyInput = document.getElementById("keyInput").value.trim();
+    if (keyInput) {
+      localStorage.setItem("nae_key", keyInput);
+      localStorage.setItem("nae_login_time", new Date().getTime());
+      showMenu();
+    } else {
+      alert("Vui lòng nhập Key!");
+    }
+  }
+
+  // Kiểm tra hết hạn thời gian thực
+  setInterval(() => {
+    const loginTimestamp = localStorage.getItem("nae_login_time");
+    if (loginTimestamp) {
+      if (new Date().getTime() - loginTimestamp > KEY_LIFETIME) {
+        alert("Key đã hết hạn!");
+        clearSession();
+      }
+    }
+  }, 10000);
+
+  function clearSession() {
+    localStorage.clear();
+    location.reload();
+  }
+
+  function showMenu() {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("menuScreen").style.display = "flex";
+  }
+
+  function launchGame(game) {
+    currentMode = game;
+    document.getElementById("menuScreen").style.display = "none";
+    document.getElementById("gameIframe").src = CONFIG[game].url;
+    document.getElementById("gameIframe").style.display = "block";
+    document.getElementById("botWrap").style.display = "flex";
+    startToolLogic();
+  }
+
+  function backToMenu() {
+    if(confirm("Xác nhận quay về Menu?")) {
+      if(updateTimer) clearInterval(updateTimer);
+      document.getElementById("gameIframe").style.display = "none";
+      document.getElementById("gameIframe").src = "";
+      document.getElementById("botWrap").style.display = "none";
+      document.getElementById("menuScreen").style.display = "flex";
+      lastS = 0;
+    }
+  }
+
+  function applyTransform(type) {
+    if (type === 'rotate') rotation += 90;
+    else if (type === 'scale') {
+      if (scale === 1) scale = 1.3;
+      else if (scale === 1.3) scale = 0.6;
+      else scale = 1;
+    }
+    document.getElementById('botWrap').style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+  }
+
+  function startToolLogic() {
+    const phienEl = document.getElementById('phienHienTai');
+    const duDoanEl = document.getElementById('duDoan');
+    const tyLeEl = document.getElementById('tyLe');
+    const statusDot = document.getElementById('statusDot');
+
+    updateTimer = setInterval(async () => {
+      try {
+        const resp = await fetch(CONFIG[currentMode].api);
+        const d = await resp.json();
+        const cP = parseInt(d.phien || d.session);
+        if (cP > lastS) {
+          lastS = cP;
+          phienEl.textContent = "#" + (cP + 1);
+          const r = Math.random() > 0.5 ? "Tài" : "Xỉu";
+          duDoanEl.textContent = r;
+          duDoanEl.style.color = r === "Tài" ? "#00ffff" : "#ff4fd8";
+          tyLeEl.textContent = (Math.floor(Math.random() * 10) + 85) + "%";
+          statusDot.style.background = "#7CFFB2";
+        }
+      } catch (e) { statusDot.style.background = "red"; }
+    }, 3000);
+  }
+
+  const botWrap = document.getElementById('botWrap');
+  let isDragging = false, ox, oy, ol, ot;
+  botWrap.onpointerdown = (e) => {
+    if (e.target.closest('.ctrl-btn') || e.target.closest('.exit-text-btn')) return;
+    isDragging = true;
+    ox = e.clientX; oy = e.clientY;
+    ol = botWrap.offsetLeft; ot = botWrap.offsetTop;
+    botWrap.setPointerCapture(e.pointerId);
+    botWrap.style.transition = "none"; 
+  };
+  window.onpointermove = (e) => {
+    if (isDragging) {
+      botWrap.style.left = (ol + e.clientX - ox) + 'px';
+      botWrap.style.top = (ot + e.clientY - oy) + 'px';
+    }
+  };
+  window.onpointerup = () => {
+    isDragging = false;
+    botWrap.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+  };
+</script>
+</body>
+</html>
+
